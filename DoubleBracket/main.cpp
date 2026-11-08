@@ -148,15 +148,17 @@ void RoundPerdants()
 {
     if (BracketPerdants.size() > 1)
     {
-        for(unsigned i = 0; i < BracketPerdants.size(); i+=2)
+        for(unsigned i = 0; i < BracketGagnants.size(); i+=2)
         {
-            PileOuFace(BracketPerdants[i],BracketPerdants[i+1]);
-            cout << endl << "Perdant" << endl << BracketPerdants[i] << endl << BracketPerdants[i+1] <<endl ;
-        }
+            for(unsigned i = 0; i < BracketPerdants.size(); i+=2)
+            {
+                PileOuFace(BracketPerdants[i],BracketPerdants[i+1]);
+                cout << endl << "Perdant" << endl << BracketPerdants[i] << endl << BracketPerdants[i+1] <<endl ;
+            }
 
-        JoueurTab[BracketPerdants[i]].roundResult=0;
-        JoueurTab[BracketPerdants[i+1]].roundResult=1;
-    }
+            JoueurTab[BracketPerdants[i]].roundResult=0;
+            JoueurTab[BracketPerdants[i+1]].roundResult=1;
+        }
     }
 }
 
