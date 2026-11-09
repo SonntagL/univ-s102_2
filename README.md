@@ -4,7 +4,7 @@
 - Round Robin
 
 3 jeux :
-- Tic-Tac-Toe
+- Jeu de dès
 - Pierre, feuille, cisaux
 - Pile ou Face
 
