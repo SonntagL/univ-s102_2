@@ -42,10 +42,9 @@ bool PileOuFace(unsigned indexJ1, unsigned indexJ2)
     {
         return indexJ2;
     }
-
-
 }
 
+//obligé de le mettre au-dessus des initialisations de variables/tableaux. Est utilisé pour les faire.
 struct Participants
 {
     int numero;
@@ -55,11 +54,15 @@ struct Participants
     int position;
 };
 
+//-----------------------------VARIABLES GLOBALES--------------------------------------------
+//a garder
+    const unsigned nmbParticipantsTotal=64;
 
-vector<Participants> JoueurTab;
-void Inscriptions()
+//----------------------------------FONCTIONS------------------------------------------------
+
+void Inscriptions(vector<Participants> JoueurTab)
 {
-    for(int i = 0; i <64; i++)
+    for(int i = 0; i <nmbParticipantsTotal; i++)
     {
         //définir nom/prénom des participants (temporaire, utiliser entrée standard + tard)
         string tmpnom = "nom" + to_string(i);
@@ -78,13 +81,10 @@ void Inscriptions()
 
 }
 
-//tableaux utilisés pour trouver qui fais face à qui
-vector<int> BracketGagnants(0);
-vector<int> BracketPerdants(0);
-void Repartition()
+void Repartition(vector<Participants> & JoueurTab, vector<int> &BracketGagnants, vector<int> &BracketPerdants, vector<int> &ParticipantsElimine)
 {
     //selon le résultat du round précédent, déterminer la position du joueur (1=winner bracket, 0=loser bracket, -1=éliminé)
-    for(int i = 0; i <64; i++)
+    for(int i = 0; i <nmbParticipantsTotal; i++)
     {
         if (JoueurTab[i].roundResult==0)
         {
@@ -94,6 +94,7 @@ void Repartition()
             }
             else
             {
+                ParticipantsElimine.push_back(JoueurTab[i].numero);
                 JoueurTab[i].position=-1;
             }
         }
@@ -105,7 +106,7 @@ void Repartition()
     //mettre les joueurs dans leurs bracket respectifs
     BracketGagnants.clear();
     BracketPerdants.clear();
-    for(unsigned i = 0; i <64; i++)
+    for(unsigned i = 0; i <nmbParticipantsTotal; i++)
     {
         if (JoueurTab[i].position==1)
         {
@@ -118,68 +119,66 @@ void Repartition()
     }
 }
 
-void RoundGagnants()
+void RoundGagnants(vector<Participants> & JoueurTab, const vector<int> &BracketGagnants, bool &FinalisteGagnant)
 {
     if (BracketGagnants.size() > 1)
     {
         for(unsigned i = 0; i < BracketGagnants.size(); i+=2)
         {
-            PileOuFace(BracketGagnants[i],BracketGagnants[i+1]);
-            cout << endl << "Gagnant" << endl << BracketGagnants[i] << endl << BracketGagnants[i+1] <<endl ;
+            unsigned tmp_numero_participant;
+            tmp_numero_participant=PileOuFace(BracketGagnants[i],BracketGagnants[i+1]);
 
-            //JoueurTab[aaa].roundResult=
+            //JoueurTab[tmp_numero_participant].roundResult=0;
 
-            /*if(PileOuFace())
-            {
-                JoueurTab[BracketGagnants[i]].roundResult=0;
-            }
-            else
-            {
-                JoueurTab[BracketGagnants[i+1]].roundResult=0;
-            }*/
-
-            JoueurTab[BracketGagnants[i]].roundResult=0;
-            JoueurTab[BracketGagnants[i+1]].roundResult=1;
+            //pour truquer les résultats
+            JoueurTab[BracketGagnants[i]].roundResult=1;
+            JoueurTab[BracketGagnants[i+1]].roundResult=0;
         }
     }
+    else
+        FinalisteGagnant=true;
+
 }
 
-void RoundPerdants()
+void RoundPerdants(vector<Participants> & JoueurTab, vector<int> &BracketPerdants, bool & FinalistePerdant)
 {
     if (BracketPerdants.size() > 1)
     {
-        for(unsigned i = 0; i < BracketGagnants.size(); i+=2)
+        for(unsigned i = 0; i < BracketPerdants.size(); i+=2)
         {
-            for(unsigned i = 0; i < BracketPerdants.size(); i+=2)
-            {
-                PileOuFace(BracketPerdants[i],BracketPerdants[i+1]);
-                cout << endl << "Perdant" << endl << BracketPerdants[i] << endl << BracketPerdants[i+1] <<endl ;
-            }
+            unsigned tmp_numero_participant;
+            tmp_numero_participant=PileOuFace(BracketPerdants[i],BracketPerdants[i+1]);
 
-            JoueurTab[BracketPerdants[i]].roundResult=0;
-            JoueurTab[BracketPerdants[i+1]].roundResult=1;
+            //JoueurTab[tmp_numero_participant].roundResult=0;
+
+            //pour truquer les résultats
+            JoueurTab[BracketPerdants[i]].roundResult=1;
+            JoueurTab[BracketPerdants[i+1]].roundResult=0;
         }
     }
+    else
+        FinalistePerdant=true;
 }
 
-
-void TestListe() //TEST écrire participants 1 par 1
+void RoundFinalistes(vector<Participants> & JoueurTab, const vector<int> &BracketGagnants, const vector<int> &BracketPerdants)
 {
-    cout << endl <<endl << "#### PARTICIPANTS ####" << endl;
-    for(int i = 0; i <64; i++){
-        cout << endl << i << " - ";
-        cout << "J" << JoueurTab[i].numero;
-        cout << " " << JoueurTab[i].nameLast;
-        cout << " " << JoueurTab[i].nameFirst;
-        cout << " r" << JoueurTab[i].roundResult;
-        cout << " p" << JoueurTab[i].position;
-    }
+    JoueurTab[BracketPerdants[0]].position=1;
+
+    unsigned tmp_numero_participant;
+    tmp_numero_participant=PileOuFace(BracketGagnants[0],BracketGagnants[1]);
+
+    //JoueurTab[tmp_numero_participant].roundResult=0;
+
+    //pour truquer les résultats
+    JoueurTab[BracketGagnants[0]].roundResult=1;
+    JoueurTab[BracketGagnants[1]].roundResult=0;
 }
 
-void TestGagnants() //TEST écrire participants 1 par 1
+
+void TestGagnants(const vector<Participants> & JoueurTab, const vector<int> &BracketGagnants) //TEST écrire participants 1 par 1
 {
     cout << endl <<endl << "## BRACKET GAGNANTS ##" << endl;
-    if (BracketGagnants.size() > 1)
+    if (BracketGagnants.size() > 0)
     {
 
         for(unsigned i = 0; i < BracketGagnants.size(); i++)
@@ -194,11 +193,11 @@ void TestGagnants() //TEST écrire participants 1 par 1
     }
 }
 
-void TestPerdants() //TEST écrire participants 1 par 1
+void TestPerdants(const vector<Participants> & JoueurTab, const vector<int> &BracketPerdants) //TEST écrire participants 1 par 1
 {
 
     cout << endl <<endl << "## BRACKET PERDANTS ##" << endl;
-    if (BracketPerdants.size() > 1)
+    if (BracketPerdants.size() > 0)
     {
         for(unsigned i = 0; i < BracketPerdants.size(); i++)
         {
@@ -214,24 +213,73 @@ void TestPerdants() //TEST écrire participants 1 par 1
 
 int main()
 {
-    Inscriptions();
 
-    for (unsigned i=0; i < 10; i++)
+    //voir fonction INSCRIPTIONS()
+    //tableau qui liste les participants
+    vector<Participants> JoueurTab;
+
+    //voir fonction REPARTITION()
+    //tableaux utilisés pour trouver qui fait face à qui
+    vector<int> BracketGagnants(0);
+    vector<int> BracketPerdants(0);
+    vector<int> ParticipantsElimine(0);
+
+    //voir fonctions ROUNDGAGNANTS() et ROUNDPERDANTS()
+    //quand il ne reste qu'un joueur dans un tableau, il est mis à TRUE, si les deux sont TRUE, lance le round de finalistes
+    bool FinalisteGagnant=false;
+    bool FinalistePerdant=false;
+
+    //--------------------------------------------------------------------------//
+
+    Inscriptions(JoueurTab);
+
+    unsigned roundCounter=0;
+    while (true)
     {
-        cout << endl << endl << "###### ROUND " << i+1 << " ######";
+        roundCounter++;
+        cout << endl << endl << "###### ROUND " << roundCounter << " ######";
 
-        //TEST
-        //TestListe();
+        Repartition(JoueurTab, BracketGagnants, BracketPerdants, ParticipantsElimine);
+        RoundGagnants(JoueurTab, BracketGagnants, FinalisteGagnant);
 
-        Repartition();
-        RoundGagnants();
-
-        Repartition();
-        RoundPerdants();
+        Repartition(JoueurTab, BracketGagnants, BracketPerdants, ParticipantsElimine);
+        RoundPerdants(JoueurTab, BracketPerdants, FinalistePerdant);
 
         // TEST
-        //TestGagnants();
-        //TestPerdants();
+        cout << endl ;
+        cout << "J" << JoueurTab[32].numero;
+        cout << " " << JoueurTab[32].nameLast;
+        cout << " " << JoueurTab[32].nameFirst;
+        cout << " r" << JoueurTab[32].roundResult;
+        cout << " p" << JoueurTab[32].position;
+        //TestGagnants(JoueurTab, BracketGagnants);
+        //TestPerdants(JoueurTab, BracketPerdants);
+        // TEST
+
+        if(FinalisteGagnant && FinalistePerdant)
+            break;
+    }
+    cout << endl << endl << endl << endl << "###### ROUND FINALISTES ######";
+    RoundFinalistes(JoueurTab, BracketGagnants, BracketPerdants);
+    Repartition(JoueurTab, BracketGagnants, BracketPerdants, ParticipantsElimine);
+
+    // TEST
+    TestGagnants(JoueurTab, BracketGagnants);
+    TestPerdants(JoueurTab, BracketPerdants);
+    // TEST
+
+
+    cout << endl << endl << endl << endl << endl << endl << "####### RESULTATS #######";
+    unsigned cmpt=0;
+    ParticipantsElimine.push_back(JoueurTab[BracketPerdants[0]].numero);
+    ParticipantsElimine.push_back(JoueurTab[BracketGagnants[0]].numero);
+
+    for(unsigned i=65; i>0; --i)
+    {
+        cmpt++;
+        cout << endl ;
+        cout << cmpt << ". " ;
+        cout << JoueurTab[ParticipantsElimine[i]].nameFirst << " " << JoueurTab[ParticipantsElimine[i]].nameLast;
     }
 
 
