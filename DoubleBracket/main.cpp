@@ -96,8 +96,6 @@ int JeuDeDes(unsigned indexJ1, unsigned indexJ2)
 
 const unsigned nmbParticipantsTotal=64;
 
-//----------------------------------FONCTIONS------------------------------------------------
-
 struct Participants
 {
     unsigned int numero;
@@ -107,6 +105,9 @@ struct Participants
     int position;
 };
 
+//----------------------------------FONCTIONS------------------------------------------------
+
+
 void Inscriptions(vector<Participants> &JoueurTab, int nmbParticipants)
 {
     for(unsigned int i = 0; i < nmbParticipants; ++i)
@@ -115,14 +116,13 @@ void Inscriptions(vector<Participants> &JoueurTab, int nmbParticipants)
         string tmpnom = "nom" + to_string(i);
         string tmpprenom = "prenom" + to_string(i);
 
+        //pour lire l'entrée standard, je l'ai désactivé parce que c'est chiant de taper autant de noms dans un fichier oracle
+        //cin >> tmpnom;
+        //cin >> tmpprenom;
+
         //ajouter participant dans JoueurTab
         Participants tmpjoueur = {i, tmpnom, tmpprenom, 1, 1};
         JoueurTab.push_back(tmpjoueur);
-
-        //cout << endl << i << " - J";
-        //cout << JoueurTab[i].numero << " ";
-        //cout << JoueurTab[i].nameLast << " ";
-        //cout << JoueurTab[i].nameFirst;
     }
 
 }
@@ -276,7 +276,7 @@ void RoundFinalistes(vector<Participants> & JoueurTab, const vector<int> &Bracke
     JoueurTab[tmp_numero_participant].roundResult=0;
 }
 
-unsigned int RoundCO3(vector<Participants> &JoueurTab)
+unsigned int RoundBO3(vector<Participants> &JoueurTab)
 {
     unsigned int tmpJoueurIndex;
     JoueurTab[0].roundResult=0;
@@ -351,7 +351,7 @@ void TestEliminations(const vector<Participants> & JoueurTab, const vector<int> 
 int main()
 {
     //graine aléatoire
-    srand(time(NULL));
+    srand(time(0));
 
     //-------------------------PREPARATION DE PARTIE----------------------------//
     //voir fonction INSCRIPTIONS()
@@ -382,12 +382,10 @@ int main()
 
         Inscriptions(JoueurTab, nmbParticipantsTotal);
 
-        //TEST, utilisé seulement par les commentaires, donc désactivé
+        //TEST, utilisé seulement pour des test, donc désactivé
         //unsigned roundCounter=0;
         while (true)
         {
-            //TEST, utilisé seulement par les commentaires, donc désactivé
-            //++roundCounter;
 
             Repartition(JoueurTab, BracketGagnants, BracketPerdants, ParticipantsElimine);
             RoundGagnants(JoueurTab, BracketGagnants, FinalisteGagnant, aQuoiOnJoue);
@@ -395,10 +393,11 @@ int main()
             Repartition(JoueurTab, BracketGagnants, BracketPerdants, ParticipantsElimine);
             RoundPerdants(JoueurTab, BracketPerdants, FinalistePerdant, aQuoiOnJoue);
 
-            // TEST, retirer les commentaires des lignes suivantes pour affichier dans la sortie standard
+            // TEST, retirer les commentaires du code suivant pour affichier dans la sortie standard
             //       le nom de tous les participants et leurs état a chaque round
 
-            /* cout << endl << endl << "###### ROUND " << roundCounter << " ######";
+            /* ++roundCounter;
+             * cout << endl << endl << "###### ROUND " << roundCounter << " ######";
              * TestGagnants(JoueurTab, BracketGagnants);
              * TestPerdants(JoueurTab, BracketPerdants);
              * TestEliminations(JoueurTab, ParticipantsElimine);
@@ -413,7 +412,7 @@ int main()
         RoundFinalistes(JoueurTab, BracketGagnants, BracketPerdants, aQuoiOnJoue);
         Repartition(JoueurTab, BracketGagnants, BracketPerdants, ParticipantsElimine);
 
-        //TEST, possibilité de cacher les lignes suivantes, mais c'est plus simple de se retrouver parmis les résultats avec
+        //TEST, possibilité de cacher les lignes suivantes, mais c'est plus simple de se retrouver parmis les résultats
         cout << endl << endl << "####### RESULTATS " ;
         switch(aQuoiOnJoue)
         {
@@ -442,7 +441,7 @@ int main()
         ParticipantsElimine.push_back(JoueurTab[BracketGagnants[0]].numero);
 
         unsigned cmpt=0;
-        for(unsigned i=4/*nmbParticipantsTotal*/; i>0; --i)
+        for(unsigned i=4; i>0; --i) //échanger "4" avec "nmbParticipantsTotal" pour avoir un classement de TOUS les joueurs
         {
             ++cmpt;
             cout << cmpt << ". " ;
@@ -450,24 +449,24 @@ int main()
         }
     }
 
-    //-------------------------CO3----------------------------//
+    //-------------------------BO3----------------------------//
     PrepTournois(JoueurTab,BracketGagnants,BracketPerdants,ParticipantsElimine,FinalisteGagnant,FinalistePerdant);
     Inscriptions(JoueurTab, 2);
 
-    unsigned int GagnantCO3 = RoundCO3(JoueurTab);
-    unsigned int PerdantCO3 = 0;
-    if(GagnantCO3==0)
-        PerdantCO3=1;
+    unsigned int GagnantBO3 = RoundBO3(JoueurTab);
+    unsigned int PerdantBO3 = 0;
+    if(GagnantBO3==0)
+        PerdantBO3=1;
 
-    cout << endl << endl << "####### RESULTATS CO3 #######" ;
+    cout << endl << endl << "####### RESULTATS BO3 #######" ;
 
     cout << endl << "1. " ;
-    cout << JoueurTab[GagnantCO3].nameFirst << " " << JoueurTab[GagnantCO3].nameLast << endl;
-    cout << "score : " << JoueurTab[GagnantCO3].roundResult << endl;
+    cout << JoueurTab[GagnantBO3].nameFirst << " " << JoueurTab[GagnantBO3].nameLast << endl;
+    cout << "score : " << JoueurTab[GagnantBO3].roundResult << endl;
 
     cout << endl << "2. " ;
-    cout << JoueurTab[PerdantCO3].nameFirst << " " << JoueurTab[PerdantCO3].nameLast << endl;
-    cout << "score : " << JoueurTab[PerdantCO3].roundResult << endl;
+    cout << JoueurTab[PerdantBO3].nameFirst << " " << JoueurTab[PerdantBO3].nameLast << endl;
+    cout << "score : " << JoueurTab[PerdantBO3].roundResult << endl;
 
     return 0;
 }
