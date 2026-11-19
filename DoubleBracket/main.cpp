@@ -107,9 +107,9 @@ struct Participants
     int position;
 };
 
-void Inscriptions(vector<Participants> &JoueurTab)
+void Inscriptions(vector<Participants> &JoueurTab, int nmbParticipants)
 {
-    for(unsigned int i = 0; i <nmbParticipantsTotal; ++i)
+    for(unsigned int i = 0; i < nmbParticipants; ++i)
     {
         //définir nom/prénom des participants (temporaire, utiliser entrée standard + tard)
         string tmpnom = "nom" + to_string(i);
@@ -161,6 +161,21 @@ void Repartition(vector<Participants> &JoueurTab, vector<int> &BracketGagnants, 
             BracketPerdants.push_back(JoueurTab[i].numero);
         }
     }
+}
+
+void PrepTournois(vector<Participants> &JoueurTab, vector<int> &BracketGagnants, vector<int> &BracketPerdants, vector<int> &ParticipantsElimine, bool &FinalisteGagnant, bool &FinalistePerdant)
+{
+    //voir fonction INSCRIPTIONS()
+    JoueurTab.clear();
+
+    //voir fonction REPARTITION()
+    BracketGagnants.clear();
+    BracketPerdants.clear();
+    ParticipantsElimine.clear();
+
+    //voir fonctions ROUNDGAGNANTS() et ROUNDPERDANTS()
+    FinalisteGagnant=false;
+    FinalistePerdant=false;
 }
 
 void RoundGagnants(vector<Participants> & JoueurTab, const vector<int> &BracketGagnants, bool &FinalisteGagnant, unsigned int &aQuoiOnJoue)
@@ -261,6 +276,26 @@ void RoundFinalistes(vector<Participants> & JoueurTab, const vector<int> &Bracke
     JoueurTab[tmp_numero_participant].roundResult=0;
 }
 
+unsigned int RoundCO3(vector<Participants> &JoueurTab)
+{
+    unsigned int tmpJoueurIndex;
+    JoueurTab[0].roundResult=0;
+    JoueurTab[1].roundResult=0;
+
+    tmpJoueurIndex = PileOuFace(JoueurTab[0].numero,JoueurTab[1].numero);
+    JoueurTab[tmpJoueurIndex].roundResult += 1;
+
+    tmpJoueurIndex = PierreFeuilleCiseaux(JoueurTab[0].numero,JoueurTab[1].numero);
+    JoueurTab[tmpJoueurIndex].roundResult += 1;
+
+    tmpJoueurIndex = JeuDeDes(JoueurTab[0].numero,JoueurTab[1].numero);
+    JoueurTab[tmpJoueurIndex].roundResult += 1;
+
+    if (JoueurTab[0].roundResult > JoueurTab[1].roundResult)
+        return JoueurTab[0].numero;
+    else
+        return JoueurTab[1].numero;
+}
 
 void TestGagnants(const vector<Participants> & JoueurTab, const vector<int> &BracketGagnants) //TEST écrire participants 1 par 1
 {
@@ -318,36 +353,34 @@ int main()
     //graine aléatoire
     srand(time(NULL));
 
+    //-------------------------PREPARATION DE PARTIE----------------------------//
+    //voir fonction INSCRIPTIONS()
+    //tableau qui liste les participants
+    vector<Participants> JoueurTab;
+
+    //voir fonction REPARTITION()
+    //tableaux utilisés pour trouver qui fait face à qui
+    vector<int> BracketGagnants(0);
+    vector<int> BracketPerdants(0);
+    vector<int> ParticipantsElimine(0);
+
+    //voir fonctions ROUNDGAGNANTS() et ROUNDPERDANTS()
+    //quand il ne reste qu'un joueur dans un tableau, il est mis à TRUE, si les deux sont TRUE, lance le round de finalistes
+    bool FinalisteGagnant;
+    bool FinalistePerdant;
+
+
     //voir fonctions ROUNDGAGNANTS(), ROUNDPERDANTS() et ROUNDFINALISTES()
     //sert à déterminer à quel jeu on joue, 1= Pile ou Face, 2= Pierre Feuille Ciseaux, 3= Jeux de Dés
-    unsigned int aQuoiOnJoue;
+    //unsigned int aQuoiOnJoue;
 
-    for (aQuoiOnJoue=1; aQuoiOnJoue<4; ++aQuoiOnJoue)
+    for (unsigned int aQuoiOnJoue=1; aQuoiOnJoue<4; ++aQuoiOnJoue)
     {
-        //-------------------------PREPARATION DE PARTIE----------------------------//
-
-        //voir fonction INSCRIPTIONS()
-        //tableau qui liste les participants
-        vector<Participants> JoueurTab;
-        JoueurTab.clear();
-
-        //voir fonction REPARTITION()
-        //tableaux utilisés pour trouver qui fait face à qui
-        vector<int> BracketGagnants(0);
-        vector<int> BracketPerdants(0);
-        vector<int> ParticipantsElimine(0);
-        BracketGagnants.clear();
-        BracketPerdants.clear();
-        ParticipantsElimine.clear();
-
-        //voir fonctions ROUNDGAGNANTS() et ROUNDPERDANTS()
-        //quand il ne reste qu'un joueur dans un tableau, il est mis à TRUE, si les deux sont TRUE, lance le round de finalistes
-        bool FinalisteGagnant=false;
-        bool FinalistePerdant=false;
+        PrepTournois(JoueurTab,BracketGagnants,BracketPerdants,ParticipantsElimine,FinalisteGagnant,FinalistePerdant);
 
         //--------------------LANCEMENT DU JEU SELECTIONE--------------------------//
 
-        Inscriptions(JoueurTab);
+        Inscriptions(JoueurTab, nmbParticipantsTotal);
 
         //TEST, utilisé seulement par les commentaires, donc désactivé
         //unsigned roundCounter=0;
@@ -417,6 +450,24 @@ int main()
         }
     }
 
+    //-------------------------CO3----------------------------//
+    PrepTournois(JoueurTab,BracketGagnants,BracketPerdants,ParticipantsElimine,FinalisteGagnant,FinalistePerdant);
+    Inscriptions(JoueurTab, 2);
+
+    unsigned int GagnantCO3 = RoundCO3(JoueurTab);
+    unsigned int PerdantCO3 = 0;
+    if(GagnantCO3==0)
+        PerdantCO3=1;
+
+    cout << endl << endl << "####### RESULTATS CO3 #######" ;
+
+    cout << endl << "1. " ;
+    cout << JoueurTab[GagnantCO3].nameFirst << " " << JoueurTab[GagnantCO3].nameLast << endl;
+    cout << "score : " << JoueurTab[GagnantCO3].roundResult << endl;
+
+    cout << endl << "2. " ;
+    cout << JoueurTab[PerdantCO3].nameFirst << " " << JoueurTab[PerdantCO3].nameLast << endl;
+    cout << "score : " << JoueurTab[PerdantCO3].roundResult << endl;
 
     return 0;
 }
